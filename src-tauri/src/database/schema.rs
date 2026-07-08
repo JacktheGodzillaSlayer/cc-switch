@@ -1543,7 +1543,11 @@ impl Database {
     /// 镜像 `Provider::resolve_usage_credentials` 的解析逻辑（`provider.rs:119-208`），
     /// 但写成纯函数以便在迁移路径（不构造 Provider 实例）里调用。
     /// 返回 `""` 表示该 provider 没有静态 key（OAuth / 官方占位 / 未配置）。
-    fn extract_legacy_api_key(settings_config_str: &str, app_type: &str) -> String {
+    ///
+    /// `pub(crate)`：除了迁移（v11→v12 backfill）外，`ProviderService::add`
+    /// 也会调用——在新建 provider 时把 settings_config 里的 api key seed 进
+    /// provider_api_keys 表，让池与 settings_config 保持同步（review P2）。
+    pub(crate) fn extract_legacy_api_key(settings_config_str: &str, app_type: &str) -> String {
         let Ok(value) = serde_json::from_str::<serde_json::Value>(settings_config_str) else {
             return String::new();
         };
